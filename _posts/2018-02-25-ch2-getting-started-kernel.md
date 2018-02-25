@@ -9,12 +9,17 @@ tags: [test]
 
 #### **Bài viết được dịch từ cuốn Linux Kernel Development**
 
-Trong chương này, chúng ta sẽ giới thiệu một số thứ cơ bản về  Linux Kernel (nhân Linux): cách lấy source, cách biên dịch và cài đặt một kernel mới. Sau đó ta sẽ lướt qua về sự khác nhau giữa kernel và chương trình user-space (không gian người sử dụng) và một số chương trình trong kernel. Mặc dù chỉ có duy nhất 1 kernel, vẫn có những sự khác biệt nhỏ giữa các kernel trong những project khác nhau. 
+Trong chương này, chúng ta sẽ giới thiệu một số thứ cơ bản về  Linux Kernel (nhân Linux): cách lấy source, cách biên dịch và cài đặt một kernel mới. Sau đó ta sẽ lướt qua về sự khác nhau giữa kernel và chương trình user-space và một số chương trình trong kernel. Mặc dù chỉ có duy nhất 1 kernel chính thống, vẫn có những sự khác biệt nhỏ giữa các kernel trong những project khác nhau. 
 
 ## Lấy Kernel Source 
-Phiên bản Linux source code hiện tại thì luôn để ở 2 dạng là: dạn nén (.tar) và dạng patch đặt ở trang chủ của Linux kernel: [http://www.kernel.org](http://www.kernel.org).
-Dưới đây giới thiệu 3 cách để lấy source code:
+Phiên bản Linux source code hiện tại thì luôn để ở 2 dạng là: dạng nén (.tar) và dạng patch đặt ở trang chủ của Linux kernel: [http://www.kernel.org](http://www.kernel.org).
+Có 3 cách để lấy source code là:
+- Sử dụng git.
+- Tải về phải nén vài giải nén.
+- Sử cụng các patch.
 
+
+Dễ dàng nhất vẫn là:
 ### Sử dụng git
 Sử dụng lệnh git để clone một phiên bản của Linux kernel (cụ thể mình sẽ clone version 2.6):
 ~~~
@@ -24,7 +29,7 @@ Và sau đó update:
 ~~~
 $ git pull
 ~~~
-
+Với hai lệnh này thì về cơ bản bạn đã có được bản cập nhật mới
 
 
 How about a yummy crepe?
