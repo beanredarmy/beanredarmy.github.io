@@ -12,7 +12,7 @@ tags: [test]
 Trong chương này, chúng ta sẽ giới thiệu một số thứ cơ bản về  Linux Kernel (nhân Linux): cách lấy source, cách biên dịch và cài đặt một kernel mới. Sau đó ta sẽ lướt qua về sự khác nhau giữa kernel và chương trình user-space (không gian người sử dụng) và một số chương trình trong kernel. Mặc dù chỉ có duy nhất 1 kernel, vẫn có những sự khác biệt nhỏ giữa các kernel trong những project khác nhau. 
 
 ## Lấy Kernel Source 
-Bản source code Linux hiện tại thì luôn được đặt ở trang chủ của Linux kernel: [http://www.kernel.org]http://www.kernel.org
+Bản source code Linux hiện tại thì luôn được đặt ở trang chủ của Linux kernel: [http://www.kernel.org](http://www.kernel.org)
 ###
 
 
