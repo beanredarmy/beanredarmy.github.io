@@ -35,7 +35,7 @@ Với hai lệnh này thì về cơ bản bạn đã có được bản cập nh
 Kernel Source Tree được chia thành các thư mục, đa số chúng chứa nhiều các thư mục con khác. 
 Các thư mục gốc trong source tree được mô tả bằng bảng dưới đây:
 | Thư mục | Mô tả|
-|----|----|
+|:----|:----------------|
 |arch| Kiến trúc chi tiết |
 |block| Các tầng vào ra|
 |crypto| Mã hóa API|
