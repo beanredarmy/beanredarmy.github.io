@@ -35,27 +35,27 @@ Với hai lệnh này thì về cơ bản bạn đã có được bản cập nh
 Kernel Source Tree được chia thành các thư mục, đa số chúng chứa nhiều các thư mục con khác. 
 Các thư mục gốc trong source tree được mô tả bằng bảng dưới đây:
 | Thư mục | Mô tả|
-|:----|:----------------|
-|arch| Kiến trúc chi tiết |
-|block| Các tầng vào ra|
-|crypto| Mã hóa API|
-|Documentation|Tài liệu của Kernel Source|
-|drivers|Device drivers|
-|firmware|Device firmware cần thiết cho driver nào đó|
-|fs| VFS và các file hệ thống đơn lẻ|
-|include| Kernel headers|
-|init| Khởi tạo Kernel|
-|ipc| Mã giao tiếp liên tiến trình|
-|kernel|Các hệ thống con lõi, vd như bộ lập lịch|
-|lib| Helper routines|
-|mm| Quản lí bộ nhớ và máy ảo|
-|net|Hệ thống network|
-|samples|các sample code|
-|scripts| Scripts để build kernel|
-|security|Linux Security Module|
-|usr| Không gian người dùng|
-|tools|Các công cụ để phát triển Linux|
-|virt| Virtualization infrastructure|
+| :----| :----------------|
+| arch| Kiến trúc chi tiết |
+| block| Các tầng vào ra|
+| crypto| Mã hóa API|
+| Documentation| Tài liệu của Kernel Source|
+| drivers| Device drivers|
+| firmware| Device firmware cần thiết cho driver nào đó|
+| fs| VFS và các file hệ thống đơn lẻ|
+| include| Kernel headers|
+| init| Khởi tạo Kernel|
+| ipc| Mã giao tiếp liên tiến trình|
+| kernel| Các hệ thống con lõi, vd như bộ lập lịch|
+| lib| Helper routines|
+| mm| Quản lí bộ nhớ và máy ảo|
+| net| Hệ thống network|
+| samples| Các sample code|
+| scripts| Scripts để build kernel|
+| security| Linux Security Module|
+| usr| Không gian người dùng|
+| tools| Các công cụ để phát triển Linux|
+| virt| Virtualization infrastructure|
 
 
 
