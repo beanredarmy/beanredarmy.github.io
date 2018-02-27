@@ -42,4 +42,8 @@ Kernel lập lịch cho các thread, chứ không phải là các tiến trình 
 Các threads chia sẻ bộ nhớ ảo _trừu tượng_, trong khi chỉ nhận bộ xử lý ảo của riêng nó.
 
 ### <span style="color:red">Vòng đời của một tiến trình</span>
+
+Một tiến trình (process) là một chương trình được kích hoạt và liên hệ tới các tài nguyên:
+- Hai hoặc nhiều tiến trình có thể tồn tại và chạy cùng một chương trình.
+- Hai hoặc nhiều tiến trình có thể tồn tại và chia sẻ tài nguyên, ví dụ như là file hoặc một không gian địa chỉ.
 (Còn nữa)
