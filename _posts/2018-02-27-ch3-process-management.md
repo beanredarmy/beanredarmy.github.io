@@ -46,4 +46,15 @@ Các threads chia sẻ bộ nhớ ảo _trừu tượng_, trong khi chỉ nhận
 Một tiến trình (process) là một chương trình được kích hoạt và liên hệ tới các tài nguyên:
 - Hai hoặc nhiều tiến trình có thể tồn tại và chạy cùng một chương trình.
 - Hai hoặc nhiều tiến trình có thể tồn tại và chia sẻ tài nguyên, ví dụ như là file hoặc một không gian địa chỉ.
+
+### <span style="color:red">fork, exec, exit và wait</span>
+
+Trên linux, lời gọi hệ thống `fork()` tạo một tiến trình mới bằng cách nhân đôi (duplicate) một tiến trình có sẵn.
+- Tiến trình gọi `fork()` là tiến trình cha, trong khi tiến trình mới sinh ra là con.
+- Nơi mà tiến trình cha tiếp tục chạy lại (resume) và nơi tiến trình con bắt đầu chạy là  1 chỗ: chính là nơi gọi `fork()`.
+- Lệnh gọi hệ thống `fork()` return cho kernel 2 lần: một lần là tiến trình cha và một lần tiến trình con.
+
+Họ lời gọi hàm `exec()` thì tạo một không gian địa chỉ mới rồi load ngay lập tức chương trình mới vào tiến trình con sau một `fork`. Trong cùng Linux kernel, `fork()` thực ra thi hành bằng lời gọi hệ thống `clone()`, `clone()` sẽ được thảo luận sau.
+
+Lời gọi `exit()` kết thúc một tiến trình và giải phóng tài nguyên. 
 (Còn nữa)
