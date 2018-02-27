@@ -23,7 +23,7 @@ Bên cạnh việc thi hành đoạn mã chương trình (text section in Unix),
 - **Các thread**.
 - Vùng dữ liệu chứa biến toàn cục.
 
-###<span style="color:red">Các thread</span>
+### <span style="color:red">Các thread</span>
 
 Các thread là các hoạt động bên trong một tiến trình. Mỗi thread chứa:
 - Bộ đếm chương trình (program counter)
@@ -33,10 +33,13 @@ Các thread là các hoạt động bên trong một tiến trình. Mỗi thread
 Kernel lập lịch cho các thread, chứ không phải là các tiến trình (process). Linux không phân biệt giữa thread và process. Với Linux, một thread là một loại tiến trình đặc biệt.
 
 
-###<span style="color:red">Bộ xử lý ảo và bộ nhớ ảo</span>
+### <span style="color:red">Bộ xử lý ảo và bộ nhớ ảo</span>
 
 Ở những hệ điều hành hiện đại, các tiến trình cung cấp 2 cái **ảo** : một bộ xử lý ảo và một bộ nhớ ảo:
 - Bộ xử lý ảo cung cấp cho tiến trình cảm giác rằng tiến trình đó là độc quyền trên hệ thống, thay vì sự thật là nó chia sẻ bộ xử lý chính với hàng trăm các tiến trình khác. Xem chương 4.
 - Bộ nhớ ảo để c ho các tiến trình cư ngụ và quản lý như là cái tiến trình đấy chiếm giữ toàn bộ bộ nhớ vậy. Xem chương 12.
 
+Các threads chia sẻ bộ nhớ ảo _trừu tượng_, trong khi chỉ nhận bộ xử lý ảo của riêng nó.
+
+### <span style="color:red">Vòng đời của một tiến trình</span>
 (Còn nữa)
