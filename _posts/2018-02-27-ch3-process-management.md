@@ -39,7 +39,7 @@ Kernel lập lịch cho các thread, chứ không phải là các tiến trình 
 - Bộ xử lý ảo cung cấp cho tiến trình cảm giác rằng tiến trình đó là độc quyền trên hệ thống, thay vì sự thật là nó chia sẻ bộ xử lý chính với hàng trăm các tiến trình khác. Xem chương 4.
 - Bộ nhớ ảo để c ho các tiến trình cư ngụ và quản lý như là cái tiến trình đấy chiếm giữ toàn bộ bộ nhớ vậy. Xem chương 12.
 
-Các threads chia sẻ bộ nhớ ảo _trừu tượng_, trong khi chỉ nhận bộ xử lý ảo của riêng nó.
+Các threads chia sẻ bộ nhớ ảo __trừu tượng__, trong khi chỉ nhận bộ xử lý ảo của riêng nó.
 
 ### <span style="color:red">Vòng đời của một tiến trình</span>
 
@@ -56,5 +56,12 @@ Trên linux, lời gọi hệ thống `fork()` tạo một tiến trình mới b
 
 Họ lời gọi hàm `exec()` thì tạo một không gian địa chỉ mới rồi load ngay lập tức chương trình mới vào tiến trình con sau một `fork`. Trong cùng Linux kernel, `fork()` thực ra thi hành bằng lời gọi hệ thống `clone()`, `clone()` sẽ được thảo luận sau.
 
-Lời gọi `exit()` kết thúc một tiến trình và giải phóng tài nguyên. 
-(Còn nữa)
+Lời gọi `exit()` kết thúc một tiến trình và giải phóng tài nguyên. Một tiến trình cha có thể dò xem trạng thái của một tiến trình con được kết thúc bằng lời gọi `wait4()`. Một tiến trình có thể đợi một tiến trình cụ thể nào đó kết thúc. Khi một tiến trình kết thúc, nó được đặt vào một trạng thái đặt biệt, gọi là __zombie__, trạng thái này đại diện cho các tiến trình được kết thúc cho đến khi cha của gọi lệnh `wait()` hoặc `waitpid()`. Kernel sẽ thi hành lời gọi `wait4()`. Hệ thống Linux, thông qua thư viện C, cung cấp các hàm `wait()`, `waitpid()`, `wait3()` và `wait4()`.
+
+## Descriptor của tiến trình và Task Structure 
+
+Một cái tên khác của tiến trình là task (tác vụ). Trong cuốn sách này, 2 thuật ngữ được luân phiên nay, mặc dù "task" thông thường để chỉ một "process" từ cái nhìn của kernel 0.0
+
+Kernel lưu danh sách các tiến trình dưới dạng một danh sách liên kết đôi vòng (circular doubly linked list), và gọi nó là **danh sách tác vụ** (task list). Nó chứa tất cả các thông tin về một tiến trình cụ thể.
+
+(Còn nữa) 
