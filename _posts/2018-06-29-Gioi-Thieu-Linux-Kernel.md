@@ -8,6 +8,7 @@ tags: [test]
 ---
 
 _Bài viết tham khảo từ tài liệu của tổ chức Bootlin_
+# I. Giới thiệu về Linux kernel.
 
 ## 1. Một chút lịch sử
   * Linux kernel (Nhân Linux) là một thành phần của hệ hiều hành, cùng với những thư viện và ứng dụng cung cấp các tính năng cho user.
@@ -47,6 +48,17 @@ _Bài viết tham khảo từ tài liệu của tổ chức Bootlin_
     Các thông tin liên quan đến hệ điều hành (tiến trình, bộ nhớ,...)
     * _sysfs_ , thường được mount ở _/sys_
     Một tập các device và bus đại diện cho hệ thống và những thông tin về những device đó.
+
+## 6. Bên trong linux kernel là gì
+  Hình sau sẽ mô tả bên trong Linux kernel:
+   ![Inside the Linux kernel](/img/Inside the Linux kernel.png)
+
+## 7. Hỗ trợ các kiến trúc hardware
+  * Thư mục _arch/_ trong kernel source:
+  * Tối thiểu là processor 32 bit, có hoặc không có MMU, và hỗ trợ gcc.
+  * Với kiến trúc 32 bit có arm, arc, c6x, m68k, microblaze.
+  * Với kiến trúc 64 bit có alpha, arm64, ia64, tile
+  * Với kiến trúc
 
 
 You can write regular [markdown](http://markdowntutorial.com/) here and Jekyll will automatically convert it to a nice webpage.  I strongly encourage you to [take 5 minutes to learn how to write in markdown](http://markdowntutorial.com/) - it'll teach you how to transform regular text into bold/italics/headings/tables/etc.
