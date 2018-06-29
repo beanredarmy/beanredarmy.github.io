@@ -60,8 +60,10 @@ Lời gọi `exit()` kết thúc một tiến trình và giải phóng tài nguy
 
 ## Descriptor của tiến trình và Task Structure 
 
-Một cái tên khác của tiến trình là task (tác vụ). Trong cuốn sách này, 2 thuật ngữ được luân phiên nay, mặc dù "task" thông thường để chỉ một "process" từ cái nhìn của kernel 0.0
+Một cái tên khác của tiến trình là task (tác vụ). Trong cuốn sách này, 2 thuật ngữ được luân phiên nhau, mặc dù "task" thông thường để chỉ một "process" từ cái nhìn của kernel 0.0
 
 Kernel lưu danh sách các tiến trình dưới dạng một danh sách liên kết đôi vòng (circular doubly linked list), và gọi nó là **danh sách tác vụ** (task list). Nó chứa tất cả các thông tin về một tiến trình cụ thể.
+
+Một descriptor của tiến trình có kiểu `struct task_struct` (định nghĩ ở `<linux/sched.h>`) là một thành phần trong task list
 
 (Còn nữa) 
