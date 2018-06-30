@@ -8,7 +8,6 @@ tags: [test]
 ---
 
 _Bài viết tham khảo từ tài liệu của tổ chức Bootlin_
-# I. Giới thiệu về Linux kernel.
 
 ## 1. Một chút lịch sử
   * Linux kernel (Nhân Linux) là một thành phần của hệ hiều hành, cùng với những thư viện và ứng dụng cung cấp các tính năng cho user.
@@ -58,7 +57,30 @@ _Bài viết tham khảo từ tài liệu của tổ chức Bootlin_
   * Tối thiểu là processor 32 bit, có hoặc không có MMU, và hỗ trợ gcc.
   * Với kiến trúc 32 bit có arm, arc, c6x, m68k, microblaze.
   * Với kiến trúc 64 bit có alpha, arm64, ia64, tile
-  * Với kiến trúc
+  * Với kiến trúc 32/64 bit có mips, powerpc, sh, sparc, x86
+  * Có thể tìm thông tin chi tiết về kernel source ở: arch/<arch>/Kconfig, arch/<arch>/README, hoặc Documentation/<arch>/
+
+## 8. Lấy kernel source ở đâu?
+  * Phiên bản chính thức của Linux kernel được phát hành bởi chính Linus Torvalds, trên trang web: [http://www.kernel.org](http://www.kernel.org)
+  * Một số nhà phát triển chip cung cấp kernel cho chip của họ, nhằm mục đích:
+    * Tập trung vào hỗ trợ phần cứng
+    * Hữu dụng khi mainline kernel (kernel chính thức) chưa hỗ trợ
+  * Một số cộng đồng con của kernel tự duy trì kernel của họ, thông thường sẽ cập nhật hơn tuy nhiên sẽ ít ổn định hơn.
+
+## 9. Cách lấy Linux source
+  * Kernel source hiện có ở [https://mirrors.edge.kernel.org/pub/linux/kernel/](https://mirrors.edge.kernel.org/pub/linux/kernel/)
+  * Tuy nhiên thì nhiều người thích sử dụng _git_ version control. Điều này là rất cần thiết cho việc phát triển kernel.
+    * Có thể lấy toàn bộ source kernel:
+      ~~~
+      git clone git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git
+      ~~~
+    * Tạo một branch tại một phiên bản kernel cụ thể:
+      ~~~
+      git checkout -b <name-of-branch> v3.11
+      ~~~
+    * Thông qua giao diện web: [http://git.kernel.org/cgit/linux/kernel/git/torvalds/linux.git/tree/.](http://git.kernel.org/cgit/linux/kernel/git/torvalds/linux.git/tree/.)
+    * Tìm hiểu thêm về Git tại [http://git-scm.com/](http://git-scm.com/)
+
 
 
 You can write regular [markdown](http://markdowntutorial.com/) here and Jekyll will automatically convert it to a nice webpage.  I strongly encourage you to [take 5 minutes to learn how to write in markdown](http://markdowntutorial.com/) - it'll teach you how to transform regular text into bold/italics/headings/tables/etc.
