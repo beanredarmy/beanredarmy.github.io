@@ -81,6 +81,34 @@ _Bài viết tham khảo từ tài liệu của tổ chức Bootlin_
     * Thông qua giao diện web: [http://git.kernel.org/cgit/linux/kernel/git/torvalds/linux.git/tree/.](http://git.kernel.org/cgit/linux/kernel/git/torvalds/linux.git/tree/.)
     * Tìm hiểu thêm về Git tại [http://git-scm.com/](http://git-scm.com/)
 
+## 10. Kích thước của Linux kernel như thế nào?
+  * Với Linux 4.11 thì:
+    * gồm 57994 files (git ls-files | wc -l)
+    * đươc viết bởi 23144003 dòng code (wc -l $(git ls-files))
+    * dung lượng 675576310 bytes (wc -c $(git ls-files))
+  * Phiên bản đã compile nhỏ nhất của Linux 4.11 được boot trên một board ARM Versatile có kích thước 405,464 bytes (compressed), 1,112,264 bytes (raw).
+  * Tại sao những source này lớn thế nhỉ?
+    Bởi vì chúng chứa hàng ngàn các device driver,rất nhiều network protocols cũng những hỗ trợ nhiều kiến trúc và filesystems.
+  * Core của linux (bao gồm bộ lập lịch (scheduler), quản lý bộ nhớ,..) thì khá là nhỏ.
+
+  * Với phiên bản kernel 4.6, các thành phần chiếm tỉ lệ dòng code như sau:
+    ▶ drivers/: 57.0%
+    ▶ arch/: 16.3%
+    ▶ fs/: 5.5%
+    ▶ sound/: 4.4%
+    ▶ net/: 4.3%
+    ▶ include/: 3.5%
+    ▶ Documentation/: 2.8%
+    ▶ tools/: 1.3%
+    ▶ kernel/: 1.2%
+    ▶ firmware/: 0.6%
+    ▶ lib/: 0.5%
+    ▶ mm/: 0.5%
+    ▶ scripts/: 0.4%
+    ▶ crypto/: 0.4%
+    ▶ security/: 0.3%
+    ▶ block/: 0.1%
+    ▶ ...
 
 
 You can write regular [markdown](http://markdowntutorial.com/) here and Jekyll will automatically convert it to a nice webpage.  I strongly encourage you to [take 5 minutes to learn how to write in markdown](http://markdowntutorial.com/) - it'll teach you how to transform regular text into bold/italics/headings/tables/etc.
