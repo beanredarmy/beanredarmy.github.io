@@ -1,6 +1,6 @@
 ---
 layout: post
-title: [C/C++] Hành trình từ code C đến file thực thi 
+title: (C/C++) Hành trình từ code C đến file thực thi 
 subtitle: 4 Giai đoạn trong quá trình compile mã nguồn C trên Linux 
 gh-repo: 
 gh-badge: [star, fork, follow]
