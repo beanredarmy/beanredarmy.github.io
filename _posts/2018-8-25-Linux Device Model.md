@@ -116,7 +116,7 @@ struct kobject là một trong những cấu trúc cơ bản của Linux Device 
 
  Khi thêm vào một bus hệ thống thì tương ứng sẽ có file xuất hiện trong /sys/bus. Giống như các đối tượng kobject, bus có thể được tổ chức thành các hệ thống thứ bậc và hiện diện ngay trong sysfs.
 
- Trong Linux Device Model, một bus được đại diện bởi struct bus_type:
+ Trong Linux Device Model, một bus được đại diện bởi [struct bus_type](http://elixir.free-electrons.com/linux/v4.9/source/include/linux/device.h#L109):
 
  ```c
  struct bus_type {
@@ -126,7 +126,7 @@ struct kobject là một trong những cấu trúc cơ bản của Linux Device 
   struct bus_attribute *bus_attrs;
   struct device_attribute *dev_attrs;
   struct driver_attribute *drv_attrs;
-  structure subsys_private *p;
+  struct subsys_private *p;
 
 	int (*match)(struct device *dev, struct device_driver *drv);
 	int (*uevent)(struct device *dev, struct kobj_uevent_env *env);
@@ -140,7 +140,38 @@ struct kobject là một trong những cấu trúc cơ bản của Linux Device 
 
 Chú ý răng bus luôn được liên kết với 1 name, các danh sách thuộc tính mặc định, một số các hàm cụ thể và private data của driver.  Hàm _uevent_ được dùng cho các hotplug device.
 
-Đăng kí và hủy đăng kí một bus được thực hiện bởi các hàm bus_register và bus_unregister.
+Đăng kí và hủy đăng kí một bus được thực hiện bởi các hàm [bus_register](http://elixir.free-electrons.com/linux/v4.9/source/drivers/base/bus.c#L879) và bus_unregister[http://elixir.free-electrons.com/linux/v4.9/source/drivers/base/bus.c#L965].
+```c
+#include <linux/device.h>
+/* mybus.c */
+ 
+//bus type
+struct bus_type my_bus_type = {
+	.name	= "mybus",
+	.match	= my_match,
+	.uevent	= my_uevent,
+};
+ 
+static int __init my_bus_init (void)
+{
+	int err;
+ 
+	//...
+	err = bus_register (&my_bus_type);
+	if (err)
+		return err;
+	//...
+}
+ 
+static void __exit my_bus_exit (void)
+{
+	//...
+	bus_unregister (&my_bus_type);
+	//...
+}
+
+
+```
 
 Ví dụ sau là các hàm được implement:
 
@@ -163,7 +194,9 @@ static int my_uevent(struct device *dev, struct kobj_uevent_env *env)
 ```
 Hàm match được sử dụng khi một thiết bị mới hoặc driver mới được thêm vào bus. Vai trò của nó là so sánh giữa ID của device và driver. Hàm uvent thì được gọi trước khi tạo ra một hotplug trên user-space và có vai trò tạo ra các biến môi trường tương ứng.
 
-Một hàm khác trên bus đó là xem được những driver và device nào đang được gắn vào bus. Mặc dù 
+Một hàm khác trên bus đó là xem được những driver và device nào đang được gắn vào bus. Mặc dù ta không thể truy cập trực tiếp chúng ( danh sách những driver và device được lưu vào private data của driver, trường  [subsys_private * p](http://elixir.free-electrons.com/linux/v4.9/source/include/linux/device.h#L134) ), nhưng chúng có thể được scan ra bằng cách sử dụng các macro [bus_for_each_dev](http://elixir.free-electrons.com/linux/v4.9/source/drivers/base/bus.c#L281) và [bus_for_each_drv](http://elixir.free-electrons.com/linux/v4.9/source/drivers/base/bus.c#L431).
+
+
 
 
 
