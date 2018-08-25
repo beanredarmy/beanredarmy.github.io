@@ -68,6 +68,7 @@ SPI xuât hiện trong sysfs ở một vài nơi như:
   - /sys/devices/.../CTLR/spiB.C/modalias ... định danh cho driver được sử dụng với device.
   - /sys/bus/spi/drivers/D ... driver cho một hoặc nhiều spi*.* device.
   - /sys/class/spi_master/spiB ... class cho SPI master dùng bus "B". Tất cả spiB.* device chia sẻ chung một đường bus SPI vật lý, với SCLK, MOSI, MISO
-  - /sys/devices/.../CTLR/slave ... virtual file cho một Slave device (có thể chưa hoặc đã đăng kí). 
-  - 
+  - /sys/devices/.../CTLR/slave ... virtual file cho một slave device (có thể chưa hoặc đã đăng kí). Việc viết tên của driver của một SPI Slave handler vào file này sẽ đăng kí cho slave device. Viết "(null)" sẽ hủy đăng kí cho slave device. Đọc từ file này sẽ được  tên của slave device (sẽ là "(null)" nếu chưa được đăng kí).
+  - /sys/class/spi_slave/spiB ... class cho SPI slave dùng bus "B". Nếu được đăng kí, một file spiB.* device sẽ xuất hiện ở đây và chia sẻ chung đường bus SPI vật lý với các SPI slave device khác.
+  
 
