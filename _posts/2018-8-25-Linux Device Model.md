@@ -107,6 +107,59 @@ Bất cứ một thao tác nào với kobject thì phải thực hiện tăng m�
 
 struct kobject là một trong những cấu trúc cơ bản của Linux Device Model. Những struct ở mức cao hơn là bus_type, device, device_driver. 
 
+### b. Xe Buýt
+
+ Bus là một kênh giao tiếp giữa bộ xử lý và thiết bị vào ra. Để đảm bảo mô hình là nhất quán thì tất cả thiết bị vào ra phải được kết nối với bộ xử lý bằng những bus như thế (thậm chí bus này có thể là bus ảo, không tương ứng với bus vật lý nào cả)
+
+ Khi thêm vào một bus hệ thống thì tương ứng sẽ có file xuất hiện trong /sys/bus. Giống như các đối tượng kobject, bus có thể được tổ chức thành các hệ thống thứ bậc và hiện diện ngay trong sysfs.
+
+ Trong Linux Device Model, một bus được đại diện bởi struct bus_type:
+
+ ```c
+ struct bus_type {
+	const char		*name;
+	const char		*dev_name;
+	struct device		*dev_root;
+  struct bus_attribute *bus_attrs;
+  struct device_attribute *dev_attrs;
+  struct driver_attribute *drv_attrs;
+  structure subsys_private *p;
+
+	int (*match)(struct device *dev, struct device_driver *drv);
+	int (*uevent)(struct device *dev, struct kobj_uevent_env *env);
+	int (*probe)(struct device *dev);
+	int (*remove)(struct device *dev);
+	void (*shutdown)(struct device *dev);
+
+  ....
+};
+```
+
+Chú ý răng bus luôn được liên kết với 1 name, các danh sách thuộc tính mặc định, một số các hàm cụ thể và private data của driver.  Hàm _uevent_ được dùng cho các hotplug device.
+
+Đăng kí và hủy đăng kí một bus được thực hiện bởi các hàm bus_register và bus_unregister.
+
+Ví dụ sau là các hàm được implement:
+
+ ```c
+#include<linux/device.h>
+#include<linux/string.h>
+
+/* match devices to drivers;  Just do a simple name test */
+static int my_match (structure device *dev, struct device_driver *driver)
+{
+   return !strncmp(dev_name(dev), driver->name, strlen(driver->name)) ;
+}
+
+/*  respond to hotplug user events;  Add environment variable DEV_NAME */
+static int my_uevent(struct device *dev, struct kobj_uevent_env *env)
+{
+   add_uevent_var(env, "DEV_NAME =% s", dev_name(dev));
+   return 0 ;
+}
+```
+Hàm match được sử dụng khi một thiết bị mới hoặc driver mới được thêm vào bus. Vai trò của nó là so sánh giữa ID của device và driver. Hàm uvent thì được gọi trước khi tạo ra một hotplug trên user-space và có vai trò tạo ra các biến môi trường tương ứng.
+
 
 
 
