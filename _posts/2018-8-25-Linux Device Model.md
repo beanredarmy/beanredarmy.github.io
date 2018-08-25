@@ -58,6 +58,7 @@ Có một số  thông tin có thể tìm thấy trong những file ở sysfs. M
   - driver : là symbolic link tới thư mục drriver ( nằm ở /sys/bus/*/driver)
 
 Còn một số những thuộc tính khác nữa dựa và bus và driver được sử dụng.
+![](plug_and_play-sysfs.png)
 
 ## 3. Những structure cơ bản trong Linux Device.
 
@@ -65,6 +66,8 @@ Linux Device Model cung cấp một số những structure để đảm bảo t�
   - struct bus_type
   - struct device 
   - struct device_driver
+
+  ![](plug_and_play-linux_device_model_structures.png)
 
 ### a. kobject structure
   kobject structre không thực hiện một chức năng đơn lẻ và độc lập mà nó thường được tích hợp vào một structure lớn hơn. Thực ra kobject hợp nhất những tập feature dùng cho những đối tượng có tính trừu tượng cao hơn trong hệ thống thứ bậc của Linux Device Model.
@@ -160,6 +163,7 @@ static int my_uevent(struct device *dev, struct kobj_uevent_env *env)
 ```
 Hàm match được sử dụng khi một thiết bị mới hoặc driver mới được thêm vào bus. Vai trò của nó là so sánh giữa ID của device và driver. Hàm uvent thì được gọi trước khi tạo ra một hotplug trên user-space và có vai trò tạo ra các biến môi trường tương ứng.
 
+Một hàm khác trên bus đó là xem được những driver và device nào đang được gắn vào bus. Mặc dù 
 
 
 
