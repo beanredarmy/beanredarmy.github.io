@@ -39,9 +39,9 @@ Bản thân kernel là một phần tách biệt với những software ở user
   container_of(pointer, container_type, container_field);
   ```
   Trong đó:
-    - pointer: Con trỏ đến trường được cho ở trong struct
-    - container_type: Type của struct chứa pointer
-    - container_field: Tên của trường mà pointer trỏ ở trong struct
+  - pointer: Con trỏ đến trường được cho ở trong struct
+  - container_type: Type của struct chứa pointer
+  - container_field: Tên của trường mà pointer trỏ ở trong struct
   
   Với ví dụ struct person, khi cho trước một instance:
   ```c
@@ -49,11 +49,13 @@ Bản thân kernel là một phần tách biệt với những software ở user
   [...]
   char *the_name_pointer = somebody.name;
   ```
+
   Ta có thể lấy được con trỏ của trường name một cách dễ dàng như trên. Và giờ ta muốn lấy được con trỏ của struct (chính là con trỏ của struct somebody), làm như thế này:
+
   ```c
   struct person *somebody_pointer;
   somebody_pointer = container_of(the_name_pointer, struct person, name);
-  ```c
+  ```
   Hàm container_of hoạt động như thế nào? CÓ thể nhìn ở định nghĩa hàm, nó lấy offset của name so với struct person để xác định được vị trí con trỏ. 
 
   Một ví dụ cụ thể hơn là:
