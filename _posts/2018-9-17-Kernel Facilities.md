@@ -102,36 +102,40 @@ Bản thân kernel là một phần tách biệt với những software ở user
   Có 2 linked list được sử dụng nhiều nhất là:
    - Danh sách liên kết đơn
    - Danh sách liên kết đôi
+
   Developer chỉ sử dụng danh sách liên kết đôi vòng khi cần cấu trúc kiểu FIFO và LIFO. 
-  Để sử dụng linked list thì cần có header <linux/list.h>
+  Để sử dụng linked list thì cần có header <linux/list.h>.
+
   Struct hay được thấy nhất trong kernel chính là struct list_head:
   ```c
   struct list_head {
-      struct list_head *next, *prev;
+    struct list_head *next, *prev;
   }
   ```
   struct list_head được dùng trong cả phần tử đầu danh sách hoặc các node. Trong kernel, để biểu diễn được một cấu trúc dữ liệu theo kiểu linked list, cần phải nhúng struct list_head vào. Ví dụ:
   ```c
   struct car {
-      int door_number;
-      char *color;
-      char *model;
+    int door_number;
+    char *color;
+    char *model;
   };
   ```
   Trước khi tạo một danh sách car, ta cần cho struct list_head vào:
   ```c
   struct car {
-      int door_number;
-      char *color;
-      char *model;
-      struct list_head list;
+    int door_number;
+    char *color;
+    char *model;
+    struct list_head list;
   };
   ```  
   Sau đó ta cần tạo một biến struct list_head để trỏ vào phần tử đầu. Phần tử đầu này không liên kết với cái ô tô nào cả, nó hơi đặc biệt một xíu:
+
   ```c
   static LIST_HEAD(carlist);
   ```
   Giờ ta có thể tạo những chiếc xe khác và đưa nó vào danh sách carlist:
+
   ```c
   #include <linux/list.h>
 
@@ -191,10 +195,10 @@ Bản thân kernel là một phần tách biệt với những software ở user
   ### 2.3 Thêm node vào danh sách
   Kernel cung cấp hàm list_add để thêm một node vào danh sách, hàm này thêm phần tử new vào ngay sau head:
   ```c
-   void list_add(struct list_head *new, struct list_head *head);
+  void list_add(struct list_head *new, struct list_head *head);
   static inline void list_add(struct list_head *new, struct list_head *head)
   {
-  __list_add(new, head, head->next);
+    __list_add(new, head, head->next);
   }
   ```
   trong đó:
@@ -203,10 +207,10 @@ Bản thân kernel là một phần tách biệt với những software ở user
               struct list_head *prev,
               struct list_head *next)
   {
-  next->prev = new;
-  new->next = next;
-  new->prev = prev;
-  prev->next = new;
+    next->prev = new;
+    new->next = next;
+    new->prev = prev;
+    prev->next = new;
   }
   ```
   Ví dụ đã đưa thêm vào list 2 chiếc xe:
@@ -221,7 +225,7 @@ Bản thân kernel là một phần tách biệt với những software ở user
   void list_add_tail(struct list_head *new, struct list_head *head);
   ```
   Hàm trên được dùng để implement một queue.
-  ### 2.4 Xóa một node khỏi list
+  ### 2.4. Xóa một node khỏi list
   Có thể sử dụng hàm sau:
   ```c
   void list_del(struct list_head *entry);
@@ -243,16 +247,17 @@ Bản thân kernel là một phần tách biệt với những software ở user
   int blue_car_num = 0;
   /* 'list' is the name of the list_head struct in our data structure */
   list_for_each_entry(acar, carlist, list){
-  if(acar->color == "blue")
-  blue_car_num++;
+    if(acar->color == "blue")
+    blue_car_num++;
   }
   ```
   Còn một điều nữa, tạo sao chúng ta lại cần list_head ở trong cấu trúc dữ liệu? Hãy xem định nghĩa hàm list_for_each_entry:
   ```c
   #define list_for_each_entry(pos, head, member)  \
   for (pos = list_entry((head)->next, typeof(*pos), member);  \
-        &pos->member != (head)  \
-        pos = list_entry(pos->member.next, typeof(*pos), member))
+        &pos->member != (head);  \
+        pos = list_entry(pos->member.next, typeof(*pos), member));
+        
   #define list_entry(ptr, type, member) \
     container_of(ptr, type, member)
   ```
