@@ -17,7 +17,7 @@ Bản thân kernel là một phần tách biệt với những software ở user
   - Một số công việc sử dụng API của kernel
   - Sử dụng IRQs
 
-## 1. Hiểu về container_of macro.
+# 1. Hiểu về container_of macro.
   Đây là một trong những macro được sử dụng nhiều nhất khi lập trình kernel cũng như device driver. Khi nhắc đến việc quản lý những data structure trong code, hầu như ta luôn có nhu cầu là đưa 1 struct A vào 1 struct B khác, rồi truy ra được con trỏ của struct B khi đã biết được struct A. Lấy một ví dụ đơn giản về struct person:
  
   ```c
@@ -97,7 +97,7 @@ Bản thân kernel là một phần tách biệt với những software ở user
     [...]
   }
   ```
-## 2. Linked lists
+# 2. Linked lists
   Thử tưởng tưởng là ta có một driver điều khiển nhiều device, giả sử là 5 devices. Ta cần phải có một cách để track được các device. Hmm, và người ta sử dụng linked list (danh sách liên kết).
   Có 2 linked list được sử dụng nhiều nhất là:
    - Danh sách liên kết đơn
@@ -153,10 +153,10 @@ Bản thân kernel là một phần tách biệt với những software ở user
   ```
   Và giờ carlist đã có 2 phần tử. Giờ ta sẽ đi sâu vào những API ở trên.
 
-  ### 2.1. Tạo và khởi tạo list
-  Có 2 cách để tạo và khởi tạo:
+## 2.1. Tạo và khởi tạo list
+Có 2 cách để tạo và khởi tạo:
+### 2.1.1. Dynamic method
 
-  #### 2.1.1. Dynamic method
   Phương pháp khởi tạo động này bao gồm một struct list_head cùng với macro INIT_LIST_HEAD:
   ```c
   struct list_head mylist;
@@ -170,7 +170,8 @@ Bản thân kernel là một phần tách biệt với những software ở user
     list->prev = list;
   }
   ```
-  #### 2.1.2. Static method
+### 2.1.2. Static method
+
   Phương pháp khởi tạo tĩnh sử dụng macro LIST_HEAD:
   ```c
   LIST_HEAD(mylist);
@@ -185,8 +186,7 @@ Bản thân kernel là một phần tách biệt với những software ở user
   #define LIST_HEAD_INIT(name) { &(name), &(name) }
   ```
   macro sẽ gán các con trỏ prev và view trong name bằng chính con trỏ name.
-  
-  ### 2.2. Tạo node
+## 2.2. Tạo node
   Để tạo một node mới, chỉ cần tạo một đối tượng của cấu trúc dữ liệu rồi nhúng list_head vào trong đó. Sử dụng lại ví dụ oto, đầu tiên ta cấp phát 
   ```c
   struct car *blackcar = kzalloc(sizeof(struct car), GFP_KERNEL);
@@ -194,7 +194,7 @@ Bản thân kernel là một phần tách biệt với những software ở user
   INIT_LIST_HEAD(&blackcar->list);
   ```
   Như đã nói thì INIT_LIST_HEAD sẽ cấp phát động cho list.
-  ### 2.3. Thêm node vào danh sách
+## 2.3. Thêm node vào danh sách
   Kernel cung cấp hàm list_add để thêm một node vào danh sách, hàm này thêm phần tử new vào ngay sau head:
   ```c
   void list_add(struct list_head *new, struct list_head *head);
@@ -227,7 +227,7 @@ Bản thân kernel là một phần tách biệt với những software ở user
   void list_add_tail(struct list_head *new, struct list_head *head);
   ```
   Hàm trên được dùng để implement một queue.
-  ### 2.4. Xóa một node khỏi list
+## 2.4. Xóa một node khỏi list
   Có thể sử dụng hàm sau:
   ```c
   void list_del(struct list_head *entry);
@@ -237,7 +237,7 @@ Bản thân kernel là một phần tách biệt với những software ở user
   list_del(&redcar->list);
   ```
   Chú ý. Hàm list_del chỉ đơn giản là ngắt node ra khỏi list rồi nối danh sách lại bằng các con trỏ prev và next. Nó không hoàn toàn giải phóng node. Nếu cần giải phóng node thì phải sử dụng hàm kfree.
-  ### 2.5. Duyệt danh sách
+## 2.5. Duyệt danh sách
   Chúng ta sử dụng macro list_for_each_entry(pos, head, member) để duyệt danh sách:
    - head là phần tử đầu danh sách
    - member là tên của struct list_head (với trường hợp của chúng ta là list)
