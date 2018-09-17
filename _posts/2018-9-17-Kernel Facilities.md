@@ -242,6 +242,7 @@ Có 2 cách để tạo và khởi tạo:
    - head là phần tử đầu danh sách
    - member là tên của struct list_head (với trường hợp của chúng ta là list)
    - pos là phần tử chỉ số dùng để duyệt bằng vòng lặp. (Giống như i ở trong for(int i = 0, i < 100, i++)).
+   
   Dùng ví dụ sau cho dễ hiểu:
   ```c
   struct car *acar; /* loop counter */
