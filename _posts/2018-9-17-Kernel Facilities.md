@@ -155,6 +155,7 @@ Bản thân kernel là một phần tách biệt với những software ở user
 
   ### 2.1. Tạo và khởi tạo list
   Có 2 cách để tạo và khởi tạo:
+
   #### 2.1.1. Dynamic method
   Phương pháp khởi tạo động này bao gồm một struct list_head cùng với macro INIT_LIST_HEAD:
   ```c
@@ -184,6 +185,7 @@ Bản thân kernel là một phần tách biệt với những software ở user
   #define LIST_HEAD_INIT(name) { &(name), &(name) }
   ```
   macro sẽ gán các con trỏ prev và view trong name bằng chính con trỏ name.
+  
   ### 2.2. Tạo node
   Để tạo một node mới, chỉ cần tạo một đối tượng của cấu trúc dữ liệu rồi nhúng list_head vào trong đó. Sử dụng lại ví dụ oto, đầu tiên ta cấp phát 
   ```c
@@ -192,7 +194,7 @@ Bản thân kernel là một phần tách biệt với những software ở user
   INIT_LIST_HEAD(&blackcar->list);
   ```
   Như đã nói thì INIT_LIST_HEAD sẽ cấp phát động cho list.
-  ### 2.3 Thêm node vào danh sách
+  ### 2.3. Thêm node vào danh sách
   Kernel cung cấp hàm list_add để thêm một node vào danh sách, hàm này thêm phần tử new vào ngay sau head:
   ```c
   void list_add(struct list_head *new, struct list_head *head);
@@ -235,7 +237,6 @@ Bản thân kernel là một phần tách biệt với những software ở user
   list_del(&redcar->list);
   ```
   Chú ý. Hàm list_del chỉ đơn giản là ngắt node ra khỏi list rồi nối danh sách lại bằng các con trỏ prev và next. Nó không hoàn toàn giải phóng node. Nếu cần giải phóng node thì phải sử dụng hàm kfree.
-
   ### 2.5. Duyệt danh sách
   Chúng ta sử dụng macro list_for_each_entry(pos, head, member) để duyệt danh sách:
    - head là phần tử đầu danh sách
@@ -257,7 +258,7 @@ Bản thân kernel là một phần tách biệt với những software ở user
   for (pos = list_entry((head)->next, typeof(*pos), member);  \
         &pos->member != (head);  \
         pos = list_entry(pos->member.next, typeof(*pos), member));
-        
+
   #define list_entry(ptr, type, member) \
     container_of(ptr, type, member)
   ```
