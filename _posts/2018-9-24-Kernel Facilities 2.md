@@ -33,14 +33,19 @@ Wow, ta lại thấy một thứ khá quen thuộc, là list_head. Đó là mộ
 
 Khai báo một struct, như thường lệ, ta có cả 2 cách khai báo là static và dynamic:
 - Khai báo static: 
+
 ```c
 DECLARE_WAIT_QUEUE_HEAD(name)
 ```
+
 - Khai báo dynamic: 
+
 ```c
 wait_queue_head_t my_wait_queue
 ```
+
 - Đưa process đi ngủ:
+
 ```c
 /*
 * block the current task (process) in the wait queue if
@@ -48,7 +53,9 @@ wait_queue_head_t my_wait_queue
 */
 int wait_event_interruptible(wait_queue_head_t q, CONDITION);
 ```
+
 - Đánh thức process:
+
 ```c
 /*
 * wake up one process sleeping in the wait queue if
@@ -56,6 +63,7 @@ int wait_event_interruptible(wait_queue_head_t q, CONDITION);
 */
 void wake_up_interruptible(wait_queue_head_t *q);
 ```
+
 Hàm wait_even_interruptible không hỏi dò mà đơn giản chỉ đánh giá điều kiện, nếu điều kiện sai thì process sẽ được chuyển thành trạng thái TASK_INTERRUPTIBLE và xóa khỏi run queue. Khi gọi hàm wake_up_interruptible thì điều kiện này lại được check lại, nếu đúng thì process đang ở trong wait queue sẽ được đánh thức, chuyển thành trạng thái TASK_RUNNING. Để đánh thức tất cả các process trong queue thì dùng hàm wake_up_interruptible_all();
 
 _Note: Thực ra những hàm chính thức là wait_event, wake_up và wake_up_all, tuy nhiên những hàm hày lại chỉ được sử dụng với những process mà không thể bị ngắt bởi một signal. Nên chúng chỉ nên được sử dụng trong các critical task (những task không cho phép ngắt). Do những process trên không bị ngắt bởi signal, ta nên kiểm tra giá trị trả về của các hàm. Giá trị trả vể khác 0 nghĩa là việc ngủ của process đã bị ngắt bởi một signal nào đó, và driver nên trả về lỗi ERESTARTSYS_ 
