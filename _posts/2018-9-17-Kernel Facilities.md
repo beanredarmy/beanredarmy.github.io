@@ -1,7 +1,7 @@
 ---
 layout: post
-title: Kernel Facilities and Helper Functions
-subtitle:  Những công cụ và hàm hay dùng trong kernel
+title: Kernel Facilities and Helper Functions (Part 1)  
+subtitle:  Những công cụ và hàm hay dùng trong kernel (Phần 1)
 gh-repo: 
 gh-badge: [star, fork, follow]
 tags: [kernel, embedded]
@@ -14,7 +14,6 @@ Bản thân kernel là một phần tách biệt với những software ở user
   - Xem cơ chế sleeping của kernel.
   - Cách sử dụng timers.
   - Cơ chế lock của kernel (Mutex, spinlock)
-  - Một số công việc sử dụng API của kernel
   - Sử dụng IRQs
 
 # 1. Hiểu về container_of macro.
