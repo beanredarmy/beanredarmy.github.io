@@ -41,7 +41,8 @@ DECLARE_WAIT_QUEUE_HEAD(name)
 - Khai báo dynamic: 
 
 ```c
-wait_queue_head_t my_wait_queue
+wait_queue_head_t my_wait_queue;
+init_waitqueue_head(&my_wait_queue);
 ```
 
 - Đưa process đi ngủ:
