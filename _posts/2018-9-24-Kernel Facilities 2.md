@@ -201,6 +201,7 @@ Hàm ```del_timer``` này có thể hủy cả kernel timer đã được kích 
 ```c
 int timer_pending( const struct timer_list *timer);
 ```
+
 #### 2.1.2.2 Ví dụ
 ```c
 #include <linux/init.h>
@@ -242,6 +243,7 @@ MODULE_AUTHOR("John Madieu <john.madieu@gmail.com>");
 MODULE_DESCRIPTION("Standard timer example");
 MODULE_LICENSE("GPL");
 ```
+
 ## 2.2 High resolution timers (HRTs)
 
 Về cơ bản thì standard timers vẫn còn thiếu sự chính xác và không phù hợp với các ứng dụng realtime. Vì thế high resolution timers, được giới thiệu từ kernel v2.6.16 (bằng cách enable ```CONFIG_HIGH_RES_TIMERS``` option khi build kernel) có độ chính xác micro giây ( có khi là nano giây trên một số platform). Như vậy HRTs có độ chính xác cao hơn nhiều so với standard timers (chỉ là milli giây). Trong khi standard timer phụ thuộc vào ```HZ``` thì HRT phụ thuộc vào ```ktime```.
