@@ -291,6 +291,12 @@ Thực ra hàm ```hrtimer_try_to_cancel``` cũng gọi hàm ```hrtimer_callback_
 
 P/s: Để trách việc timer tự động restart thì hàm callback của hrtimer  phải trả về ```HRTIMER_NORESTART```
 
+Ta có thể check xem HRT có ở trên system hay không bằng cách:
+- Xem config file, đại loại như ```CONFIG_HIGH_RES_TIMERS=y: zcat /proc/configs.gz | grep CONFIG_HIGH_RES_TIMERS .```
+- Xem ở trong ```cat /proc/timer_list``` hoặc ```cat /proc/timer_list | grep resolution```. Nếu ```.resolution``` hiện ra 1 nsecs và ```event_handler``` hiện ```hrtimer_interrupts``` thì ok.
+- Dùng system call ```clock_getres```.
+- Trong kernel code dùng ```#ifdef CONFIG_HIGH_RES_TIMERS ```.
+
 
 
 
