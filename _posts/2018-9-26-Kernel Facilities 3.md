@@ -49,6 +49,7 @@ DEFINE_MUTEX(my_mutex);
 struct mutex my_mutex;
 mutex_init(&my_mutex);
 ```
+
 #### Acquire và release
 - Lock:
 ```c
