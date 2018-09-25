@@ -17,7 +17,7 @@ Ngủ là cơ chế mà theo đó, process sẽ tha cho bộ xử lý, để b�
 
 Bộ lập lịch của kernel quản lí một danh sách những tác vụ đang chạy, gọi là một run queue. Các process cần được ngủ sẽ bị xóa khỏi run queue và không được lập lịch nữa. Trừ khi có một thứ gì đấy tác động, đánh thức chúng dậy, nếu không thì chúng cứ ngủ vậy mãi. Chúng ta có thể cho một process đi ngủ để đợi tài nguyên giải phóng, rồi tạo ra một điều kiện gì đó để đánh thức nó dậy. Để implement cơ chế này thì kernel cung cấp một tập các function cũng như data structure.
 
-## 2. Wait queue.
+## 1.2. Wait queue.
 Khi bị loại bỏ khỏi run queue, một process ngủ sẽ đi vào wait queue. Wait queue làm một thành phần không thể thiếu trong các process blocked I/O. Để hiểu cách hoạt động của wait queu, xem source code thôi:
 ```c
 struct __wait_queue {
