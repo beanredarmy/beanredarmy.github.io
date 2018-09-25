@@ -4,7 +4,7 @@ title: Kernel Facilities and Helper Functions (Part 1)
 subtitle:  Những công cụ và hàm hay dùng trong kernel (Phần 1)
 gh-repo: 
 gh-badge: [star, fork, follow]
-tags: [kernel, embedded]
+tags: [kernel, embedded, device driver]
 ---
 
 _Tham khảo từ Linux Device Drivers Development_

@@ -4,7 +4,7 @@ title: Kernel Facilities and Helper Functions (Part 2)
 subtitle:  Những công cụ và hàm hay dùng trong kernel (Phần 2)
 gh-repo: 
 gh-badge: [star, fork, follow]
-tags: [kernel, embedded]
+tags: [kernel, embedded, device driver]
 ---
 
 _Tham khảo từ Linux Device Drivers Development_
@@ -299,7 +299,31 @@ Ta có thể check xem HRT có ở trên system hay không bằng cách:
 - Dùng system call ```clock_getres```.
 - Trong kernel code dùng ```#ifdef CONFIG_HIGH_RES_TIMERS ```.
 
+## 2.3 Delay và sleep trong kernel
 
+Để code delay được thì đầu tiên phải include ```<linux/delay>``` đã. Về cơ bản thì có 2 loại delay, tùy thuộc vào context mà code chúng ta đang chạy: atomic và nonatomic.
 
+### 2.3.1 Atomic context
+
+Atomic dịch ra có nghĩa là nguyên tử. Hàm ý nguyên tử nghĩa là không thể chia nhỏ ra hơn được nữa. Theo lý đó, task chạy trong atomic context không được phép ngủ, không được lập lịch, đã chạy là chạy một mạch đến khi xong. Vậy muốn delay một task như vậy không ngoài cách nào khác là dùng một vòng lặp busy-wait. Kernel cung cấp cho chúng ta một họ hàm Xdelay, về cơ bản các hàm này sẽ tạo một vòng lặp và tiêu tốn thời gian vào đó:
+- ```ndelay(unsigned long nsecs)```
+- ```udelay(unsigned long usecs)```
+- ```mdelay(unsigned long msecs)```
+
+Ta chỉ nên sử dụng hàm ```udelay()``` vì hàm ```ndelay()``` có chuẩn hay không phụ thuộc nhiều vào hardware nữa. 
+
+Timer handlers (hàm callbacks mà ta bàn ở phần timer phía trên) được chạy trong atomic context, nghĩa là nó không được phép ngủ. 
+
+### 2.3.2 Nonatomic context
+
+Nonatomic context thì ngược lại, task được phép ngủ. Kernel cung cấp họ hàm cho việc ngủ ở context này, phụ thuộc vào nhu cầu mà mình muốn delay nó bao lâu:
+- ```udelay(unsigned long usecs)```: có vẻ hàm này là hàm nhắc lại phía bên trên, là một vòng lặp busy-wait. Ta nên sử dụng những hàm này vào việc ngủ trong ít µsecs ( < ~10 us ).
+- ```usleep_range(unsigned long min, unsigned long max)```: Hàm này dùng hrtimers, và dùng cho việc delay trong tầm  ~µsecs hoặc msecs (10
+us - 20 ms). Ở vùng này nên tránh dùng ```udelay()```
+- ```msleep(unsigned long msecs)```: Dùng jiffies/legacy_timers. TA nên dùng với nhu cầu trên 10ms+.
+
+Nhắc lại vẫn có thể dùng các hàm ở atomic context ở đây nhưng như thế rất phí phạm, tại sao được ngủ thì lại thức để delay làm gì. Chỉ khi delay với độ dài nhỏ thì mới nên dùng, như ở trường hợp hàm ```udelay()```.
+
+Ta dừng lại phần 2 này ở đây, những thứ hay ho tiếp theo mình sẽ viết trong phần 3.
 
 
