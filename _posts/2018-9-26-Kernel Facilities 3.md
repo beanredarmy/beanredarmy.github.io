@@ -63,3 +63,93 @@ int mutex_lock_killable(struct mutex *lock);
 void mutex_unlock(struct mutex *lock);
 ```
 
+Đôi lúc nếu muốn ta có thể kiểm tra xem mutex có bị lock hay không bằng cách sử dụng hàm:
+```c
+int mutex_is_locked(struct mutex *lock);
+```
+
+Hàm này sẽ kiểm tra xem liệu process chứa mutex có NULL hay không. Ngoài hàm mutex_lock còn có hàm mutex_trylock, sự khác biệt là hàm mutex_lock sẽ làm cho process ngủ đến khi lấy được mutex, còn với mutex_trylock thì sẽ trả về giá trị ngay, nếu lấy được mutex trả về 1, ngược lại trả về 0:
+```c
+int mutex_trylock(struct mutex *lock);
+```
+
+Cũng giống như họ hàm interruptible của wait queue, hàm mutex_lock_interruptible() khuyến khích được sử dụng. Khi sử dụng hàm này, những process không lấy được mutex được đưa vào một hàng đợi có thể bị ngắt, nghĩa là có thể đánh thức những process trong hàng đợi mutex bằng một signal nào đó. Đối với mutex_lock thì việc đợi là không thể bị ngắt. Hàm mutex_lock_killable() thì những process trong hàng đợi mutex chỉ có thể bị ngắt bởi tín hiệu kill process.
+
+Như vậy nên cẩn thận khi sử dụng hàm mutex_lock(), hãy sử dụng khi đảm bảo khi mutex chắc chắn được giải phóng, và nên giải phóng trong khoảng thời gian ngắn. Ở user context thì nên luôn sử dụng mutex_lock_interruptible() vì mutex_lock() cũng không bị ngắt ngay cả khi nhận tín hiệu ctrl+c.
+
+Sau đây là ví dụ:
+```c
+struct mutex my_mutex;
+mutex_init(&my_mutex);
+/* inside a work or a thread */
+mutex_lock(&my_mutex);
+access_shared_memory();
+mutex_unlock(&my_mutex);
+```
+
+Tổng kết lại, có những sự thật khi dùng mutex:
+- Chỉ có 1 task có thể giữ mutex tại một thời điểm
+- Phải được khởi tạo bằng các API
+- Task giữ mutex có thể exit để lại hậu quả là mutex vẫn bị khóa khiến cho các process đang đợi nó sẽ ngủ mãi mãi
+- Vùng nhớ của task nắm giữ lock không được phép giải phóng ??? 
+- Task giữ mutex không được khởi tạo lại
+- Vì những thao tác sẽ bao gồm việc lập lịch lại, mutex không nên sử dụng trong atomic context, giống như tasklet và timer.
+
+Giống như wait_queue, mutex không dùng cơ chế thăm dò. Mỗi khi mutex_unlock được gọi, kernel sẽ kiểm tra những process đang đợi trong wait_List. Một trong số chúng được đánh thức theo thứ tự mà chúng được đi ngủ. 
+
+## 1.2 Spinlock
+
+Spin có nghĩa là quay, hàm ý sẽ dùng cơ chế hỏi quay vòng cho đến khi đạt được lock, chứ không phải cho vào hàng đợi như mutex.
+Bất cứ thread nào cần spinlock sẽ tạo ra một vòng lặp cho đến khi đạt được spinlock mới thoát ra khỏi vòng lặp nên spinlock sẽ tiêu tốn CPU rất nhiều. Vậy nên chỉ dùng cho những lần hỏi lock thật nhanh, đặc biệt là khi thời gian giữ spinlock nhỏ hơn thời gian lập lịch lại. Spinlock cần được giải phóng ngay khi critical task hoàn thành, không được dây dưa.
+
+Để tránh việc lãng phí CPU (lãng phí như là lập lịch cho một thread có thể đang spin, hoặc là đợi một spinlock đang được giữ một process ngủ@@), kernel sẽ vô hiệu hóa việc chen hàng khi code giữ spinlock đang chạy. Chen hàng là hiện tượng một process A đang chạy thì bị ngắt, sau khi thực hiện ngắt xong thì process B lại được thực hiện thay vì process A. Nghĩa là phần code này sẽ chạy ngay mà không được phép ngủ để làm những process đang đợi kia không tiêu tốn thời gian và CPU.
+
+Miễn là có một task nào đó đang giữ spinlock, những task khác có thể phải đang spin khi đang đợi nó. Khi sử dụng spinlock, cần phải đảm bảo rằng nó sẽ không bị giữ trong một thời gian dài. Việc spin trên một processor có nghĩa rằng chẳng còn task nào có thể chạy trên processor đó ở thời điểm đó, như vậy việc sử dụng spinlock trên các bộ vi xử lý 1 core là vô nghĩa, và có thể dẫn tới việc làm chậm hệ thống, thậm chí là deadlock. Ở các bộ vxl 1 core, ta nên sử dụng cặp đôi 
+spin_lock_irqsave() và spin_unlock_irqrestore(), bộ đôi này tương ứng sẽ vô hiệu hóa ngắt trên CPU, tránh việc tranh chấp khi xảy ra ngắt.
+
+Khi mà ta không biết được ta cần viết driver  cho hệ thống như thế nào, nói chung nên sử dụng spin_lock_irqsave(spinlock_t *lock, unsigned long flags), hàm này sẽ vô hiệu hóa ngắt trên processor đang chạy nó. Hàm spin_lock_irqsave sẽ gọi tới local_irq_save(flags), đây là một hàm phụ thuộc kiến trúc hệ thống, mục đích là lưu giữ trạng thái IRQ, và preempt_disable() để vô hiệu hóa việc chen hàng trên những CPU liên quan. Sau đó nên dùng hàm spin_unlock_irqrestore() để khôi phục lại những thao tác trước. 
+Ví dụ dưới đây là một irq handler:
+```c
+/* some where */
+spinlock_t my_spinlock;
+spin_lock_init(my_spinlock);
+static irqreturn_t my_irq_handler(int irq, void *data)
+{
+  unsigned long status, flags;
+  spin_lock_irqsave(&my_spinlock, flags);
+  status = access_shared_resources();
+  spin_unlock_irqrestore(&gpio->slock, flags);
+  return IRQ_HANDLED;
+}
+```
+
+## 1.3 Spinlock vs Mutex
+
+Spinlock và mutex có hai mục đích khác nhau:
+- Mutex bảo vệ tài nguyên critical của process, trong khi spinlock bảo vệ vùng critical của trình phục vụ ngắt (irq handler).
+- Mutex đưa những process "hỏi mà không cho" vào hàng đợi cho đến khi lấy được mutex, trong khi spinlock dử dụng vòng lặp cho đến khi đạt được lock.
+- Ta không thể giữ spinlock trong một thời gian dài vì sẽ tiêu tốn nhiều CPU, trong khi mutex có thể giữ tùy ý miễn là tài nguyên vẫn đang cần được bảo vệ.  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
