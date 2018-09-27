@@ -131,16 +131,46 @@ Vấn đề đối với mutex là đặt những process (hoặc thread) về t
 # 2. Cơ chế work deferring 
 
 Defer dịch sang tiếng việt là "hoãn" nhưng có nghĩa có vẻ không chuẩn lắm nên mình cứ để nguyên. Ta hiểu deferring là cơ chế mà ta lập lịch cho một công việc nào đấy được thực hiện trong tương lai. Đương nhiên là kernel sẽ cung cấp cho ta những công cụ để thực hiện cơ chế này. Có 3 cách để thực hiện nhiệm vụ này:
-- SoftIRQs: Chạy trong atomic context
 - Tasklets: Chạy trong atomic context
-- Workqueues: Executed in a process context 
+- Workqueues: Chạy trong process context 
 Nhắc lại là trong atomic context thì task không được phép ngủ. 
+Tasklets và workqueus đều được triển khai ở bottom-half của một interrupt handler (vấn đề này sẽ được bàn sau)
+## 2.1 Tasklet
+Tasklet trong kernel được đại diện bằng struct tasklet_struct:
+```c
+struct tasklet_struct
+{
+  struct tasklet_struct *next;
+  unsigned long state;
+  atomic_t count;
+  void (*func)(unsigned long);
+  unsigned long data;
+};
+```
 
-## 2.1 Softirqs và ksoftirqd
+Về cơ bản thì tasklet là không reentrant. Một đoạn code được gọi là reentrant nếu nó có thể bị ngắt khi đang thực thi, rồi sau đó có thể được thực thi tiếp. Tasklet được thiết kế để có thể chạy đồng thời trên chỉ 1 CPU (ngay cả trên SMP system), đó là CPU mà nó được lập lịch, những tasklet khác có thể chạy đồng thời trên những CPUs khác. Những API của tasklet khá đơn giản:
+### 2.1.1 Khai báo một tasklet
+- Động:
+```c
+void tasklet_init(struct tasklet_struct *t, void (*func)(unsigned long), unsigned long data);
+```
 
-Software IRQ (softirq), hoặc gọi là ngắt mềm là cơ chế deferring, được sử dụng cho
+- Tĩnh:
+```c
+DECLARE_TASKLET( tasklet_example, tasklet_function, tasklet_data );
+DECLARE_TASKLET_DISABLED(name, func, data);
+```
 
+Chỉ có một điểm khác biệt giữa hai hàm này. Hàm đầu tạo một tasklet đã được enable và sẵn sàng để được lập lịch mà không cần gọi hàm nào nữa (bằng cách set trường count = 0), trong khi hàm sau thì tạo một tasklet bị disable (bằng cách set trường count = 1), do đó sau hàm này phải gọi tiếp hàm tasklet_enable() trước khi tasklet có thể lập lịch:
+```c
+#define DECLARE_TASKLET(name, func, data) \
+struct tasklet_struct name = { NULL, 0, ATOMIC_INIT(0), func, data }
 
+#define DECLARE_TASKLET_DISABLED(name, func, data) \
+struct tasklet_struct name = { NULL, 0, ATOMIC_INIT(1), func, data }
+```
+
+### 2.1.2 Bật và vô hiệu hóa tasklet
 
 
 
