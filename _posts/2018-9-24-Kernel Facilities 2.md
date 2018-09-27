@@ -31,6 +31,9 @@ struct __wait_queue {
 
 Wow, ta lại thấy một thứ khá quen thuộc, là ```list_head```. Đó là một linked list. Tất cả những process mà cần đi ngủ thì đêu được đưa vào hàng đợi này (do đó nó có tên là wait queue) và được đặt vào trạng thái ngủ cho đến khi một điều kiện trở thành true và đánh thức nó.
 
+![alt text](https://s3-ap-southeast-1.amazonaws.com/kipalog.com/gbmo0f4km6_LNXqH.gif)
+Một Wait queue sẽ gồm các thành phần chính: Một phần tử chỉ có nhiệm vụ đứng đầu danh sách và đại diện cho cả danh sách là wait_queue_head_t ,và các phần tử đứng sau đại diện cho các task được đưa vào danh sách là wait_queue_t. Như vậy việc khai báo và vận hành một wait queue sẽ bao gồm việc tạo phần tử đầu danh sách và thêm các phần tử chứa task vào danh sách.  
+
 Khai báo một struct, như thường lệ, ta có cả 2 cách khai báo là static và dynamic:
 - Khai báo static: 
 

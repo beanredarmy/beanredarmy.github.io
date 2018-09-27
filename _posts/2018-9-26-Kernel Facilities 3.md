@@ -102,7 +102,7 @@ Giống như wait_queue, mutex không dùng cơ chế thăm dò. Mỗi khi mutex
 Spin có nghĩa là quay, hàm ý sẽ dùng cơ chế hỏi quay vòng cho đến khi đạt được lock, chứ không phải cho vào hàng đợi như mutex.
 Bất cứ thread nào cần spinlock sẽ tạo ra một vòng lặp cho đến khi đạt được spinlock mới thoát ra khỏi vòng lặp nên spinlock sẽ tiêu tốn CPU rất nhiều. Vậy nên chỉ dùng cho những lần hỏi lock thật nhanh, đặc biệt là khi thời gian giữ spinlock nhỏ hơn thời gian lập lịch lại. Spinlock cần được giải phóng ngay khi critical task hoàn thành, không được dây dưa.
 
-Để tránh việc lãng phí CPU (lãng phí như là lập lịch cho một thread có thể đang spin, hoặc là đợi một spinlock đang được giữ một process ngủ@@), kernel sẽ vô hiệu hóa việc chen hàng khi code giữ spinlock đang chạy. Chen hàng là hiện tượng một process A đang chạy thì bị ngắt, sau khi thực hiện ngắt xong thì process B lại được thực hiện thay vì process A. Nghĩa là phần code này sẽ chạy ngay mà không được phép ngủ để làm những process đang đợi kia không tiêu tốn thời gian và CPU.
+Để tránh việc lãng phí CPU (lãng phí như là lập lịch cho một thread có thể đang spin, hoặc là đợi một spinlock đang được giữ một process ngủ@@), kernel sẽ vô hiệu hóa việc chen hàng khi code giữ spinlock đang chạy. Chen hàng là hiện tượng một process A đang chạy thì bị ngắt, sau khi thực hiện ngắt xong thì process B lại được thực hiện thay vì process A. Nghĩa là phần code này sẽ chạy ngay mà không được phép ngủ (dù cho bị ngắt thì thực hiện ngắt xong phải quay lại thực hiện tiếp) để làm những process đang đợi kia không tiêu tốn thời gian và CPU.
 
 Miễn là có một task nào đó đang giữ spinlock, những task khác có thể phải đang spin khi đang đợi nó. Khi sử dụng spinlock, cần phải đảm bảo rằng nó sẽ không bị giữ trong một thời gian dài. Việc spin trên một processor có nghĩa rằng chẳng còn task nào có thể chạy trên processor đó ở thời điểm đó, như vậy việc sử dụng spinlock trên các bộ vi xử lý 1 core là vô nghĩa, và có thể dẫn tới việc làm chậm hệ thống, thậm chí là deadlock. Ở các bộ vxl 1 core, ta nên sử dụng cặp đôi 
 spin_lock_irqsave() và spin_unlock_irqrestore(), bộ đôi này tương ứng sẽ vô hiệu hóa ngắt trên CPU, tránh việc tranh chấp khi xảy ra ngắt.
@@ -125,13 +125,20 @@ static irqreturn_t my_irq_handler(int irq, void *data)
 
 ## 1.3 Spinlock vs Mutex
 
-Spinlock và mutex có hai mục đích khác nhau:
+Vấn đề đối với mutex là đặt những process (hoặc thread) về trạng thái ngủ và đưa vào hàng đợi rồi lại đánh thức chúng khi có tín hiệu, những thao tác này tiêu tốn một lượng thời gian và lệnh CPU nhất định. Vấn đề với spinlock là việc nếu càng muốn bảo vệ tài nguyên càng lâu thì tiêu tốn càng nhiều CPU. Như vậy ta chỉ muốn sử dụng spinlock trong những trường hợp mà xử lý tài nguyên thật nhanh để một process khác không rơi vào vòng lặp spin quá lâu, trong khi những trường hợp muốn bảo vệ tài nguyên dài hơi, nên sử dụng mutex. Ngoài ra với spinlock, thread nắm giữ nó không được phép ngủ, nếu ngủ thì thời gian chờ đợi sẽ rất lâu. Vậy nên sinlock và mutex có hai mục đích khác nhau:
 - Mutex bảo vệ tài nguyên critical của process, trong khi spinlock bảo vệ vùng critical của trình phục vụ ngắt (irq handler).
-- Mutex đưa những process "hỏi mà không cho" vào hàng đợi cho đến khi lấy được mutex, trong khi spinlock dử dụng vòng lặp cho đến khi đạt được lock.
-- Ta không thể giữ spinlock trong một thời gian dài vì sẽ tiêu tốn nhiều CPU, trong khi mutex có thể giữ tùy ý miễn là tài nguyên vẫn đang cần được bảo vệ.  
 
+# 2. Cơ chế work deferring 
 
+Defer dịch sang tiếng việt là "hoãn" nhưng có nghĩa có vẻ không chuẩn lắm nên mình cứ để nguyên. Ta hiểu deferring là cơ chế mà ta lập lịch cho một công việc nào đấy được thực hiện trong tương lai. Đương nhiên là kernel sẽ cung cấp cho ta những công cụ để thực hiện cơ chế này. Có 3 cách để thực hiện nhiệm vụ này:
+- SoftIRQs: Chạy trong atomic context
+- Tasklets: Chạy trong atomic context
+- Workqueues: Executed in a process context 
+Nhắc lại là trong atomic context thì task không được phép ngủ. 
 
+## 2.1 Softirqs và ksoftirqd
+
+Software IRQ (softirq), hoặc gọi là ngắt mềm là cơ chế deferring, được sử dụng cho
 
 
 
