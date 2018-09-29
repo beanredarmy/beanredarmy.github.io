@@ -130,9 +130,9 @@ Vấn đề đối với mutex là đặt những process (hoặc thread) về t
 
 # 2. Cơ chế work deferring 
 
-Defer dịch sang tiếng việt là "hoãn" nhưng có nghĩa có vẻ không chuẩn lắm nên mình cứ để nguyên. Ta hiểu deferring là cơ chế mà ta lập lịch cho một công việc nào đấy được thực hiện trong tương lai. Đương nhiên là kernel sẽ cung cấp cho ta những công cụ để thực hiện cơ chế này. Có 3 cách để thực hiện nhiệm vụ này:
-- Tasklets: Chạy trong atomic context
-- Workqueues: Chạy trong process context 
+Defer dịch sang tiếng việt là "hoãn" nhưng có nghĩa có vẻ không chuẩn lắm nên mình cứ để nguyên. Ta hiểu deferring là cơ chế mà ta lập lịch cho một công việc nào đấy được thực hiện trong tương lai. Nghĩa là ta sẽ khai báo một công việc nào đấy, rồi thông báo kernel cho phép việc này chạy trong tương lai gần, còn chính xác là chạy khi nào thì bạn không biết, kernel sẽ lo việc đó. Việc defer work là vô cùng quan trọng, nhất là trong việc xử lý ngắt (sẽ bàn sau). Đương nhiên là kernel sẽ cung cấp cho ta những công cụ để thực hiện cơ chế này. Có 3 cách để thực hiện nhiệm vụ này:
+- Tasklets: Chạy trong atomic context.
+- Workqueues: Chạy trong process context.
 Nhắc lại là trong atomic context thì task không được phép ngủ. 
 Tasklets và workqueus đều được triển khai ở bottom-half của một interrupt handler (vấn đề này sẽ được bàn sau)
 ## 2.1 Tasklet
@@ -171,6 +171,227 @@ struct tasklet_struct name = { NULL, 0, ATOMIC_INIT(1), func, data }
 ```
 
 ### 2.1.2 Bật và vô hiệu hóa tasklet
+Để kích hoạt một tasklet, ta dùng hàm sau:
+```c
+void tasklet_enable(struct tasklet_struct *);
+```
+
+Ở những phiên bản kernel cũ ta có thể thấy hàm 
+```c
+void tasklet_hi_enable(struct tasklet_struct *);
+```
+
+được sử dụng. Tuy nhiên hai hàm này thực chất là một. 
+Để vô hiệu hóa một tasklet, ta dùng hàm
+```c
+void tasklet_disable(struct tasklet_struct *);
+```
+
+Ta cũng có thể dùng hàm
+```c
+void tasklet_disable_nosync(struct tasklet_struct *);
+```
+
+hàm tasklet_disable sẽ vô hiệu hóa tasklet và trả về giá trị chỉ khi tasklet đã kết thúc việc thực thi (nếu đã từng thực thi), trong khi hàm tasklet_disable_nosync thì trả về lập tức, cho dù là việc thực khi đã kết thúc hay chưa.
+
+### 2.1.3 Lập lịch cho tasklet
+Có 2 hàm được sử dụng để lập lịch cho tasklet, tùy thuộc vào độ ưu tiên mà bạn muốn trao cho nó:
+```c
+void tasklet_schedule(struct tasklet_struct *t);
+void tasklet_hi_schedule(struct tasklet_struct *t);
+```
+
+Kernel duy trì 2 danh sách, một danh sách mức ưu tiên thông thường, danh sách cài lại mức ưu tiên cao. tasklet_schedule đưa tasklet vào danh sách mức ưu tiên thông thường, còn tasklet_hi_schedule thì mức ưu tiên cao. Ta sẽ cần sử dụng độ ưu tiên cao khi cần thực hiện interrupt handler với độ trễ thấp. Có một số tính chất của tasklet:
+- Gọi tasklet_schedule đối với một tasklet đã được lập lịch trước đó mà tasklet đó còn chưa được thực thi thì sẽ có chẳng chuyện gì xảy ra. 
+- tasklet_schedule có thể được gọi ngay bên trong một tasklet, nghĩa là tasklet có thể lập lịch cho chính nó.
+- Các tasklet có độ ưu tiên cao luôn được thực hiện trước những cái có độ ưu tiên thông thường. Tuy nhiên việc lạm dụng độ ưu tiên cao sẽ làm tăng độ trễ của toàn hệ thống. Vậy nên chỉ sử dụng độ ưu tiên cao cho những công việc nhanh và cần thiết.
+
+Ta có thể dừng ngay một tasklet bằng cách sử dụng hàm tasklet_kill. Hàm này sẽ ngăn tasklet sẽ chạy(tức là đã đc lập lịch mà muốn tasklet thôi không chạy nữa), hoặc đợi tasklet hoàn thành (nếu đang chạy) rồi kill nó:
+```c
+void tasklet_kill(struct tasklet_struct *t);
+```
+
+Xem ví dụ sau:
+```c
+#include <linux/kernel.h>
+#include <linux/module.h>
+#include <linux/interrupt.h>
+/* for tasklets API */
+char tasklet_data[]="We use a string; but it could be pointer to a structure";
+/* Tasklet handler, that just print the data */
+void tasklet_work(unsigned long data)
+{
+  printk("%s\n", (char *)data);
+}
+DECLARE_TASKLET(my_tasklet, tasklet_function, (unsigned long)
+tasklet_data);
+static int __init my_init(void)
+{
+  /*
+  * Schedule the handler.
+  * * Tasklet arealso scheduled from interrupt handler
+  * */
+ tasklet_schedule(&my_tasklet);
+ return 0;
+}
+
+void my_exit(void)
+{
+  tasklet_kill(&my_tasklet);
+}
+module_init(my_init);
+module_exit(my_exit);
+```
+
+## 2.2 Work queues
+Có một ví dụ ở phần Wait queue đã nhắc đến Work queue, hôm nay ta sẽ đi xem work queue là gì. 
+Work queue được xuất hiện từ Linux kernel 2.6, được sử dụng nhiều nhất (nhiều hơn tasklet). Bạn biết vì sao không? Vì tasklet được sử dụng ở atomic context, còn work queue được sử dụng ở process context. Do process context luôn xảy ra thường xuyên hơn là atomic context nên những gì được áp dụng ở process context sẽ luôn được sử dụng nhiều hơn, điển hình như mutex luôn được sử dụng nhiều hơn là spinlock. Và đây cũng là sự lựa chọn duy nhất khi ta muốn ngủ ở bottom half (nhắc đến nhiều lần quá mà chưa thấy giải thích, cừ từ từ khoai sẽ nhừ, sẽ có bài viết sau). Vì ngủ được, công việc có thể xử lý I/O data, giữ mutext, ngủ, delay.
+
+Có 2 cách để làm việc với work queue ở kernel:
+- Thứ nhât, có một default shared work queue, được handle bởi một một tập các kernel thread, mỗi thread chạy trên một CPU. Khi có một công việc cần lập lịch, chỉ cần đưa công việc đó vào hàng đợi global này, công việc sẽ được thực hiện trong một thời điểm thích hợp. 
+- Thứ hai, ta tự tạo một work queue rồi thêm công việc vào đó. Điều này có nghĩa là mỗi khi công việc (work handler) cần thực thi, kernel thread của ta sẽ thứ dậy và handle nó, thay vì thread được định nghĩa sẵn của shared work queue.
+
+**Hàm thực hiện công việc được gọi là work handler.**
+### 2.2.1 Kernel-global workqueue
+Trừ khi ta không có lựa chọn nào khác (hoặc cần một performance thực sự khắt khe, hoặc cần control tất cả những thứ trong workqueue), nếu ta chỉ cần thỉnh thoảng submit task, thì ta nên sử dụng shared workqueue của kernel. Tất nhiên với lưu ý là khi sử dụng đồ chung thì ta cũng nên tốt bụng một tí, đừng độc quyền đồ chung làm của riêng. 
+
+Do việc thực thi các task trong hàng đợi này được sắp xếp theo thứ tự trên mỗi CPU, ta không nên để  một task ngủ lâu vì các task còn lại trong queue sẽ không thực chạy. Ta chẳng biết task của ta phải chia sẻ queue với task nào khác nên việc task của ta, nên đừng bất ngờ khi task của ta phải hơi lâu mới lấy được CPU. 
+
+Với loại workqueue này, ta luôn nên khởi tạo bằng macro INIT_WORK, sau đó chỉ cần truyền struct work_struct vào. Có 4 hàm dùng để lập lịch work trên shared workqueue:
+- hàm đầu tiên sẽ lập lịch cho công việc trên CPU hiện tại:
+```c
+int schedule_work(struct work_struct *work);
+```
+
+- hàm thứ hai giống hàm thứ nhất, trừ việc có delay:
+```c
+static inline bool schedule_delayed_work(struct delayed_work *dwork, unsigned long delay);
+```
+
+- hàm thứ 3 lập lịch cho công việc trên một CPU chỉ định:
+```c
+int schedule_work_on(int cpu, struct work_struct *work);
+```
+
+- hàm thứ 4 giống hàm thứ 3, trừ việc có delay:
+```c
+int scheduled_delayed_work_on(int cpu, struct delayed_work *dwork, unsigned long delay);
+```
+
+Và shared workqueue mà nãy giờ chúng ta nhắc tới là system_wq, được định nghĩa ở kernel/workqueue.c:
+```c
+struct workqueue_struct *system_wq __read_mostly;
+EXPORT_SYMBOL(system_wq);
+```
+
+Một công việc khi đã được đưa vào shared workqueue có thể bị hủy bởi hàm cancel_delayed_work. Ta cũng có thể flush cái shared workqueue này bằng hàm:
+```c
+void flush_scheduled_work(void);
+```
+
+Ví dụ cụ thể với shared workqueue:
+```c
+#include <linux/module.h>
+#include <linux/init.h>
+#include <linux/sched.h>    /* for sleep */
+#include <linux/wait.h>     /* for wait queue */
+#include <linux/time.h>
+#include <linux/delay.h>
+#include <linux/slab.h>         /* for kmalloc() */
+#include <linux/workqueue.h>
+
+//static DECLARE_WAIT_QUEUE_HEAD(my_wq);
+static int sleep = 0;
+
+struct work_data {
+    struct work_struct my_work;
+    wait_queue_head_t my_wq;
+    int the_data;
+};
+
+static void work_handler(struct work_struct *work)
+{
+    struct work_data *my_data = container_of(work, \
+                                 struct work_data, my_work); 
+    pr_info("Work queue module handler: %s, data is %d\n", __FUNCTION__, my_data->the_data);
+    msleep(3000);
+    wake_up_interruptible(&my_data->my_wq);
+    kfree(my_data);
+}
+
+static int __init my_init(void)
+{
+    struct work_data * my_data;
+
+    my_data = kmalloc(sizeof(struct work_data), GFP_KERNEL);
+    my_data->the_data = 34;
+
+    INIT_WORK(&my_data->my_work, work_handler);
+    init_waitqueue_head(&my_data->my_wq);
+
+    schedule_work(&my_data->my_work);
+    pr_info("I'm goint to sleep ...\n");
+    wait_event_interruptible(my_data->my_wq, sleep != 0);
+    pr_info("I am Waked up...\n");
+    return 0;
+}
+
+static void __exit my_exit(void)
+{
+    pr_info("Work queue module exit: %s %d\n", __FUNCTION__,  __LINE__);
+}
+
+module_init(my_init);
+module_exit(my_exit);
+```
+
+Để ý một chút ở ví dụ trên, để truyền dữ liệu vào workqueue handler, ta đã đưa struct work_struct vào một custom data structure, và sử dụng container_of để lấy lại được con trỏ custom data. Đây là cách phổ biến nhất để truyền dữ liêu vào một workqueu handler.
+
+### 2.2.2 Tự tạo workqueue
+Một work queue được đại diện bằng struct workqueue_struct, còn một công việc bị đưa vào hàng đợi của work queue thì được đại diện bằng struct work_struct. Có 4 bước để lập lịch công việc bằng kernel thread của ta:
+- Khai báo/khởi tạo một struct workqueue_struct
+- Tạo hàm thực hiện công việc (work handler)
+- Tạo struct work_struct sẽ chứa công việc của ta
+- Đưa hàm thực hiện công việc vào work_struct
+
+**Cú pháp**
+Những hàm sau được định nghĩa ở include/linux/workqueue.h :
+- Khai báo work và work queue:
+```c
+struct workqueue_struct *myqueue;
+struct work_struct thework;
+```
+
+- Định nghĩa hàm thực hiện công việc:
+```c
+void dowork(void *data) {
+/* Code goes here */ };
+```
+
+- Khởi tạo work queue và đưa hàm thực hiện công việc vào:
+```c
+myqueue = create_singlethread_workqueue( "mywork" );
+INIT_WORK( &thework, dowork, <data-pointer> );
+```
+
+Ta cũng có thể tạo work queue bằng macro create_workqueue. Sự khác nhau giữa create_workqueue và create_singlethread_workqueue là hàm create_workqueue() sử dụng một thread cho mỗi CPU và create_singlethread_workqueue() chỉ sử dụng 1 thread.
+
+- Lập lịch công việc:
+```c
+queue_work(myqueue, &thework);
+```
+
+hoặc có thể lập lịch công việc sau một khoảng delay:
+```c
+queue_dalayed_work(myqueue, &thework, <delay>);
+```
+
+Hai hàm trên trả về false nếu công việc đã được đưa lên một queue nào đó, trả về true nếu ngược lại. Chú ý là khoảng thời gian delay này là số jiffies phải đợi để được đưa vào hàng đợi. Ta có thể sử dụng hàm msecs_to_jiffies để chuyển đổ từ đơn vị micro giây sang jifffies, ví dụ nếu cần delay 5ms:
+```c
+queue_delayed_work(myqueue, &thework, msecs_to_jiffies(5));
+```
+
+
 
 
 
