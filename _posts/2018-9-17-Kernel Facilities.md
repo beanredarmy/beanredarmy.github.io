@@ -17,7 +17,7 @@ Bản thân kernel là một phần tách biệt với những software ở user
   - Sử dụng IRQs
 
 # 1. Hiểu về container_of macro.
-  Đây là một trong những macro được sử dụng nhiều nhất khi lập trình kernel cũng như device driver. Khi nhắc đến việc quản lý những data structure trong code, hầu như ta luôn có nhu cầu là đưa 1 struct A vào 1 struct B khác, rồi truy ra được con trỏ của struct B khi đã biết được struct A. Lấy một ví dụ đơn giản về struct person:
+  Đây là một trong những macro được sử dụng nhiều nhất khi lập trình kernel cũng như device driver. Khi nhắc đến việc quản lý những data structure trong code, hầu như ta luôn có nhu cầu là đưa 1 struct A vào 1 struct B khác, rồi truy ra được con trỏ của struct B khi đã biết được struct A. Lấy một ví dụ đơn giản về ```struct person```:
  
   ```c
   struct person {
@@ -25,7 +25,7 @@ Bản thân kernel là một phần tách biệt với những software ở user
     char *name;
   } p;
   ```
-  Tức là giả sử bạn chỉ có được con trỏ của trường age hoặc name, làm sao bạn có thể lấy được con trỏ struct chứa 2 trường này, tức là con trỏ p? Macro container_of sẽ giúp ta làm việc này, đúng như cái tên của nó. Phân tích macro này một chút, nó được định nghĩa ở include/linux/kernel.h:
+  Tức là giả sử bạn chỉ có được con trỏ của trường age hoặc name, làm sao bạn có thể lấy được con trỏ struct chứa 2 trường này, tức là con trỏ p? Macro ```container_of``` sẽ giúp ta làm việc này, đúng như cái tên của nó. Phân tích macro này một chút, nó được định nghĩa ở ```include/linux/kernel.h```:
   ```c
   #define container_of(ptr, type, member) ({
   \
@@ -38,24 +38,24 @@ Bản thân kernel là một phần tách biệt với những software ở user
   container_of(pointer, container_type, container_field);
   ```
   Trong đó:
-  - pointer: Con trỏ đến trường được cho ở trong struct
-  - container_type: Type của struct chứa pointer
-  - container_field: Tên của trường mà pointer trỏ ở trong struct
+  - ```pointer```: Con trỏ đến trường được cho ở trong struct
+  - ```container_type```: Type của struct chứa pointer
+  - ```container_field```: Tên của trường mà pointer trỏ ở trong struct
   
-  Với ví dụ struct person, khi cho trước một instance:
+  Với ví dụ ```struct person```, khi cho trước một instance:
   ```c
   struct person somebody;
   [...]
   char *the_name_pointer = somebody.name;
   ```
 
-  Ta có thể lấy được con trỏ của trường name một cách dễ dàng như trên. Và giờ ta muốn lấy được con trỏ của struct (chính là con trỏ của struct somebody), làm như thế này:
+  Ta có thể lấy được con trỏ của trường name một cách dễ dàng như trên. Và giờ ta muốn lấy được con trỏ của struct (chính là con trỏ của ```struct somebody```), làm như thế này:
 
   ```c
   struct person *somebody_pointer;
   somebody_pointer = container_of(the_name_pointer, struct person, name);
   ```
-  Hàm container_of hoạt động như thế nào? CÓ thể nhìn ở định nghĩa hàm, nó lấy offset của name so với struct person để xác định được vị trí con trỏ. 
+  Hàm ```container_of``` hoạt động như thế nào? Có thể nhìn ở định nghĩa hàm, nó lấy offset của ```name``` so với ```struct person``` để xác định được vị trí con trỏ. 
 
   Một ví dụ cụ thể hơn là:
   ```c
@@ -105,13 +105,13 @@ Bản thân kernel là một phần tách biệt với những software ở user
   Developer chỉ sử dụng danh sách liên kết đôi vòng khi cần cấu trúc kiểu FIFO và LIFO. 
   Để sử dụng linked list thì cần có header <linux/list.h>.
 
-  Struct hay được thấy nhất trong kernel chính là struct list_head:
+  Struct hay được thấy nhất trong kernel chính là ```struct list_head```:
   ```c
   struct list_head {
     struct list_head *next, *prev;
   }
   ```
-  struct list_head được dùng trong cả phần tử đầu danh sách hoặc các node. Trong kernel, để biểu diễn được một cấu trúc dữ liệu theo kiểu linked list, cần phải nhúng struct list_head vào. Ví dụ:
+  ```struct list_head``` được dùng trong cả phần tử đầu danh sách hoặc các node. Trong kernel, để biểu diễn được một cấu trúc dữ liệu theo kiểu linked list, cần phải nhúng ```struct list_head``` vào. Ví dụ:
   ```c
   struct car {
     int door_number;
@@ -119,7 +119,7 @@ Bản thân kernel là một phần tách biệt với những software ở user
     char *model;
   };
   ```
-  Trước khi tạo một danh sách car, ta cần cho struct list_head vào:
+  Trước khi tạo một danh sách car, ta cần cho ```struct list_head``` vào:
   ```c
   struct car {
     int door_number;
@@ -128,7 +128,7 @@ Bản thân kernel là một phần tách biệt với những software ở user
     struct list_head list;
   };
   ```  
-  Sau đó ta cần tạo một biến struct list_head để trỏ vào phần tử đầu. Phần tử đầu này không liên kết với cái ô tô nào cả, nó hơi đặc biệt một xíu:
+  Sau đó ta cần tạo một biến ```struct list_head``` để trỏ vào phần tử đầu. Phần tử đầu này không liên kết với cái ô tô nào cả, nó hơi đặc biệt một xíu:
 
   ```c
   static LIST_HEAD(carlist);
@@ -156,7 +156,7 @@ Bản thân kernel là một phần tách biệt với những software ở user
 Có 2 cách để tạo và khởi tạo:
 ### 2.1.1. Dynamic method
 
-  Phương pháp khởi tạo động này bao gồm một struct list_head cùng với macro INIT_LIST_HEAD:
+  Phương pháp khởi tạo động này bao gồm một ```struct list_head``` cùng với macro ```INIT_LIST_HEAD```:
   ```c
   struct list_head mylist;
   INIT_LIST_HEAD(&mylist);
@@ -171,7 +171,7 @@ Có 2 cách để tạo và khởi tạo:
   ```
 ### 2.1.2. Static method
 
-  Phương pháp khởi tạo tĩnh sử dụng macro LIST_HEAD:
+  Phương pháp khởi tạo tĩnh sử dụng macro ```LIST_HEAD```:
   ```c
   LIST_HEAD(mylist);
   ```
@@ -186,15 +186,15 @@ Có 2 cách để tạo và khởi tạo:
   ```
   macro sẽ gán các con trỏ prev và view trong name bằng chính con trỏ name.
 ## 2.2. Tạo node
-  Để tạo một node mới, chỉ cần tạo một đối tượng của cấu trúc dữ liệu rồi nhúng list_head vào trong đó. Sử dụng lại ví dụ oto, đầu tiên ta cấp phát 
+  Để tạo một node mới, chỉ cần tạo một đối tượng của cấu trúc dữ liệu rồi nhúng ```list_head``` vào trong đó. Sử dụng lại ví dụ oto, đầu tiên ta cấp phát 
   ```c
   struct car *blackcar = kzalloc(sizeof(struct car), GFP_KERNEL);
   /* non static initialization, since it is the embedded list field*/
   INIT_LIST_HEAD(&blackcar->list);
   ```
-  Như đã nói thì INIT_LIST_HEAD sẽ cấp phát động cho list.
+  Như đã nói thì ```INIT_LIST_HEAD``` sẽ cấp phát động cho list.
 ## 2.3. Thêm node vào danh sách
-  Kernel cung cấp hàm list_add để thêm một node vào danh sách, hàm này thêm phần tử new vào ngay sau head:
+  Kernel cung cấp hàm ```list_add``` để thêm một node vào danh sách, hàm này thêm phần tử new vào ngay sau head:
   ```c
   void list_add(struct list_head *new, struct list_head *head);
   static inline void list_add(struct list_head *new, struct list_head *head)
@@ -235,12 +235,12 @@ Có 2 cách để tạo và khởi tạo:
   ```c
   list_del(&redcar->list);
   ```
-  Chú ý. Hàm list_del chỉ đơn giản là ngắt node ra khỏi list rồi nối danh sách lại bằng các con trỏ prev và next. Nó không hoàn toàn giải phóng node. Nếu cần giải phóng node thì phải sử dụng hàm kfree.
+  Chú ý. Hàm ```list_del``` chỉ đơn giản là ngắt node ra khỏi list rồi nối danh sách lại bằng các con trỏ ```prev``` và ```next```. Nó không hoàn toàn giải phóng node. Nếu cần giải phóng node thì phải sử dụng hàm ```kfree```.
 ## 2.5. Duyệt danh sách
-  Chúng ta sử dụng macro list_for_each_entry(pos, head, member) để duyệt danh sách:
-   - head là phần tử đầu danh sách
-   - member là tên của struct list_head (với trường hợp của chúng ta là list)
-   - pos là phần tử chỉ số dùng để duyệt bằng vòng lặp. (Giống như i ở trong for(int i = 0, i < 100, i++)).
+  Chúng ta sử dụng macro ```list_for_each_entry(pos, head, member)``` để duyệt danh sách:
+   - ```head``` là phần tử đầu danh sách
+   - ```member``` là tên của ```struct list_head``` (với trường hợp của chúng ta là list)
+   - ```pos``` là phần tử chỉ số dùng để duyệt bằng vòng lặp. (Giống như i ở trong for(int i = 0, i < 100, i++)).
    
   Dùng ví dụ sau cho dễ hiểu:
   ```c
@@ -252,7 +252,7 @@ Có 2 cách để tạo và khởi tạo:
     blue_car_num++;
   }
   ```
-  Còn một điều nữa, tạo sao chúng ta lại cần list_head ở trong cấu trúc dữ liệu? Hãy xem định nghĩa hàm list_for_each_entry:
+  Còn một điều nữa, tạo sao chúng ta lại cần ```list_head``` ở trong cấu trúc dữ liệu? Hãy xem định nghĩa hàm ```list_for_each_entry```:
   ```c
   #define list_for_each_entry(pos, head, member)  \
   for (pos = list_entry((head)->next, typeof(*pos), member);  \
@@ -262,4 +262,4 @@ Có 2 cách để tạo và khởi tạo:
   #define list_entry(ptr, type, member) \
     container_of(ptr, type, member)
   ```
-  Vâng, và đây chúng ta hiểu được sức mạnh của hàm container_of. :))))
+  Vâng, và đây chúng ta hiểu được sức mạnh của hàm ```container_of```. :))))

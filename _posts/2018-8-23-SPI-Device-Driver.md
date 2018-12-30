@@ -71,4 +71,12 @@ SPI xuât hiện trong sysfs ở một vài nơi như:
   - /sys/devices/.../CTLR/slave ... virtual file cho một slave device (có thể chưa hoặc đã đăng kí). Việc viết tên của driver của một SPI Slave handler vào file này sẽ đăng kí cho slave device. Viết "(null)" sẽ hủy đăng kí cho slave device. Đọc từ file này sẽ được  tên của slave device (sẽ là "(null)" nếu chưa được đăng kí).
   - /sys/class/spi_slave/spiB ... class cho SPI slave dùng bus "B". Nếu được đăng kí, một file spiB.* device sẽ xuất hiện ở đây và chia sẻ chung đường bus SPI vật lý với các SPI slave device khác.
   
+Vị trí thật của những class của controller phụ thuộc vào việc có enable biến CONFIG_SYSFS_DEPRECATED hay không....
 
+## 5. Init code khai báo những SPI device này như thế nào?
+
+Linux cần một số thông tin để config chính xác cho những SPI device. Những thông tin này thông thường được cung cấp cho board-specific code, thậm chí cho các chip để chúng hỗ trợ cho việc tự động tìm/liệt kê thiết bị.
+
+ ### A. KHAI BÁO CONTROLLER
+
+Thông tin đầu tiên chính là danh sách những SPI controller đang có. Với SOC, chúng thường sẽ là những platform device
